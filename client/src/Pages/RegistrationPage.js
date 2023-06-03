@@ -36,7 +36,9 @@ const RegistrationPage = () => {
   const handleRegistration = async (e) => {
     e.preventDefault();
     if (!username || !email || !phone || !password) {
-      // Handle case when any required field is not given
+      toast.error('Please fill in all required fields.', {
+        position: toast.POSITION.TOP_CENTER,
+      });
       return;
     }
 
@@ -50,7 +52,6 @@ const RegistrationPage = () => {
       });
 
       if (response.status === 201) {
-        const { user, token } = response.data;
         toast.success('Registration successful!', {
           position: toast.POSITION.TOP_CENTER,
         });
@@ -95,7 +96,7 @@ const RegistrationPage = () => {
                   <option value="admin">Admin</option>
                 </Form.Control>
               </Form.Group>
-              <Button variant="primary" type="submit" disabled={!username || !email || !phone || !password}>
+              <Button variant="primary" type="submit">
                 Register
               </Button>
               <p className="text-center mt-2">

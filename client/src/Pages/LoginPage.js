@@ -1,16 +1,22 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Form, Button, Container, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../Context/auth.js';
-import axios from 'axios';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [auth, setAuth] = useAuth();
+  const [email, setEmail] = useState('ruman.cse.brur@gmail.com');
+  const [password, setPassword] = useState('Ostad@2023');
+  const { auth, login } = useAuth();
+
+  useEffect(() => {
+    if (auth.token) {
+      // Redirect to dashboard page if session is not destroyed
+      navigate('/dashboard');
+    }
+  }, [auth.token, navigate]);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -23,31 +29,19 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      // Handle case when email or password is not given
+      toast.error('Please provide both email and password.', {
+        position: toast.POSITION.TOP_CENTER,
+      });
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/v1/user/login', {
-        email,
-        password,
-      });
-
-      if (response.status === 200) {
-        const { user, token } = response.data;
-        toast.success('Login successful!', {
-          position: toast.POSITION.TOP_CENTER,
-        });
-        setAuth({ user, token }); // Update auth context with user and token
-        localStorage.setItem('auth', JSON.stringify({ user, token })); // Store auth data in local storage
-        navigate('/dashboard'); // Redirect to dashboard page
-      } else {
-        toast.error('Invalid email or password. Please try again.', {
-          position: toast.POSITION.TOP_CENTER,
-        });
-      }
+      await login(email, password);
+      navigate('/dashboard'); // Redirect to dashboard page
     } catch (error) {
-      console.error(error); // Handle error
+      toast.error('Invalid email or password. Please try again.', {
+        position: toast.POSITION.TOP_CENTER,
+      });
     }
   };
 
@@ -66,7 +60,7 @@ const LoginPage = () => {
                 <Form.Label>Password:</Form.Label>
                 <Form.Control type="password" placeholder="Enter password" value={password} onChange={handlePasswordChange} />
               </Form.Group>
-              <Button variant="primary" type="submit" disabled={!email || !password}>
+              <Button variant="primary" type="submit">
                 Login
               </Button>
               <p className="text-center mt-2">
